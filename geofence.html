@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geofencing Example with Drawing</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Leaflet Draw CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+  <style>
+    #map {
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Geofencing Example with Drawing</h1>
+  <div id="map"></div>
+  <button onclick="checkGeofence()">Check Geofence</button>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Leaflet Draw JS -->
+  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+  <!-- Turf.js JS -->
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+  <script>
+    // Initialize the map at Robinsons Cybergate Tower 2
+    var map = L.map('map').setView([14.5780, 121.0410], 13);
+
+    // Add a tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Initialize Leaflet Draw control
+    var drawnItems = L.featureGroup().addTo(map);
+    var drawControl = new L.Control.Draw({
+      edit: {
+        featureGroup: drawnItems
+      }
+    });
+    map.addControl(drawControl);
+
+    // Event listener for when a shape is drawn
+    map.on(L.Draw.Event.CREATED, function(event) {
+      var layer = event.layer;
+      drawnItems.addLayer(layer);
+    });
+
+    // Function to check if a point is within any drawn geofence
+    function checkGeofence() {
+      var point = turf.point([121.0410, 14.5780]); // Example point at Robinsons Cybergate Tower 2
+      var inside = false;
+
+      drawnItems.eachLayer(function(layer) {
+        var geoJson = layer.toGeoJSON();
+        if (turf.booleanPointInPolygon(point, geoJson)) {
+          inside = true;
+        }
+      });
+
+      if (inside) {
+        alert('Point is inside at least one geofence');
+      } else {
+        alert('Point is outside all geofences');
+      }
+    }
+  </script>
+</body>
+</html>
